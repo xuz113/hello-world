@@ -1,0 +1,75 @@
+corr <- function(directory, threshold = 0) {
+        
+        olddir <- getwd()
+        newdir <- file.path(olddir,directory)
+        
+        ## obtain filelist
+        filelist <- list.files(path = newdir)
+        pcor <- c()
+        
+        for (i in 1:length(filelist)) {
+                fileToOpenPath <- file.path(newdir, filelist[i])
+                fileToOpen <- read.csv(fileToOpenPath) 
+                subfile <- subset(fileToOpen, !is.na(fileToOpen[,2]) & !is.na(fileToOpen[,3]))
+                
+                ptotal <- nrow(subfile)
+                
+                if (ptotal > threshold) {pcor <- c(pcor, cor(subfile$sulfate, subfile$nitrate))}
+        }
+        
+        pcor
+}
+
+complete <- function(directory, id = 1:332) {
+        ## define new directory with argument 'directory'
+        
+        olddir <- getwd()
+        newdir <- file.path(olddir,directory)
+        
+        ## obtain filelist
+        pidcol = c()
+        pnobscol = c()
+        filelist <- list.files(path = newdir)
+        
+        for (i in id) {
+                fileToOpenPath <- file.path(newdir, filelist[i]) ##construct path
+                fileToOpen <- read.csv(fileToOpenPath) 
+                subfile <- subset(fileToOpen, !is.na(fileToOpen[,2]) & !is.na(fileToOpen[,3])) ##subset without NA
+                ptotal <- nrow(subfile)
+                
+                pidcol <- c(pidcol, i)
+                pnobscol <- c(pnobscol, ptotal)
+        }
+        
+        ## pcomplete <- matrix(c(pidcol, pnobscol), ncol = 2), matrix method
+        pcomplete <- data.frame(pidcol, pnobscol) ## data frame method
+        colnames(pcomplete) <- c("id", "nobs")
+        pcomplete
+}
+
+pollutantmean <- function(directory, pollutant, id = 1:332) {
+        ## define new directory with argument 'directory'
+        
+        olddir <- getwd()
+        newdir <- file.path(olddir,directory)
+        
+        ## initial sum total and length
+        ## obtain filelist
+        ptotal <- 0
+        plength <- 0
+        filelist <- list.files(path = newdir)
+        
+        
+        for (i in id) {
+                fileToOpenPath <- file.path(newdir, filelist[i]) ##construct path
+                fileToOpen <- read.csv(fileToOpenPath) 
+                filecol <- which(colnames(fileToOpen) == pollutant) ##obtain pollutant type and column #
+                subfile <- subset(fileToOpen, !is.na(fileToOpen[,filecol])) ##subset without NA
+                ptotal <- ptotal + sum(subfile[,filecol])
+                plength <- plength + length(subfile[,filecol])
+                
+        }
+        
+        pmean <- ptotal/plength
+        pmean
+}
